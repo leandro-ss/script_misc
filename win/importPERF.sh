@@ -3,19 +3,19 @@
 #NLS_LANG='BRAZILIAN PORTUGUESE_BRAZIL.WE8ISO8859P1'; export NLS_LANG
 
 if [ $1 == "true" ]; then
-sqlplus -s  lessilva/Mokona69@CAPLANP1 <<EOF 1> /dev/null
+sqlplus -s  username/password@DATABASE <<EOF 1> /dev/null
 drop table METRIC_DATA; drop table METRIC_DATA_TMP;
 exit 
 EOF
 fi
 
-sqlplus -s  lessilva/Mokona69@CAPLANP1 <<EOF 1> /dev/null
+sqlplus -s  username/password@DATABASE <<EOF 1> /dev/null
 create table METRIC_DATA (  COLLECT_DATE DATE, METRIC_NAME VARCHAR2(128), VALUE NUMBER, IMPORT_DATE DATE); 
 create table METRIC_DATA_TMP ( COLLECT_DATE DATE, METRIC_NAME  VARCHAR2(128), VALUE NUMBER, IMPORT_DATE  DATE );
 exit 
 EOF
 
-# Verifica arquivos disponíveis
+# Verifica arquivos disponï¿½veis
 for FILE_NAME in `ls *.csv` ; do
 
     # Conta quantidade de colunas do arquivo
@@ -45,7 +45,7 @@ for FILE_NAME in `ls *.csv` ; do
 
     # Importa perfmon via SQL*Loader
     export NLS_NUMERIC_CHARACTERS=.,
-    sqlldr lessilva/Mokona69@CAPLANP1 control=mapping_tmp.ctl log=$FILE_NAME.log bad=$FILE_NAME.bad direct=true bindsize=10485760 readsize=10485760 errors=1000000
+    sqlldr username/password@DATABASE control=mapping_tmp.ctl log=$FILE_NAME.log bad=$FILE_NAME.bad direct=true bindsize=10485760 readsize=10485760 errors=1000000
 
     # Cria script para executar merge
     echo "BEGIN "                                                                             >  perfmon_merge.sql
@@ -61,8 +61,8 @@ for FILE_NAME in `ls *.csv` ; do
     echo "END;"                                                                               >> perfmon_merge.sql
     echo "/"                                                                                  >> perfmon_merge.sql
 
-# Insere a métrica na base
-sqlplus -s  lessilva/Mokona69@CAPLANP1 <<EOF 1> /dev/null
+# Insere a mï¿½trica na base
+sqlplus -s  username/password@DATABASE <<EOF 1> /dev/null
 set pages 0; set feedback off; set serveroutput on;
 @perfmon_merge.sql;
 commit;
@@ -71,7 +71,7 @@ alter table metric_data_tmp move;
 exit
 EOF
 
-    # Remove arquivo temporário
+    # Remove arquivo temporï¿½rio
     rm -rf $FILE_NAME
     rm -rf perfmon_loader.sql
     rm -rf perfmon_merge.sql
