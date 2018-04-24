@@ -1,0 +1,53 @@
+SET lines 300 pages 600
+COLUMN STATISTIC_NAME format a30
+column value format 999,999,999,999,999
+column object_Name format a50
+SELECT *
+FROM
+  (SELECT t1.statistic_name,
+    t1.Value,
+    t1.object_name,
+    t1.object_type ,
+    t1.owner,
+    dense_rank() over(partition BY statistic_name order by value DESC) rnk
+  FROM
+    (SELECT 'LOGICAL_READS_DELTA' statistic_name,
+      SUM(LOGICAL_READS_DELTA) AS "VALUE",
+      st.obj#,
+      o.object_type,
+      o.owner,
+      o.object_name
+    FROM dba_hist_seg_stat st,
+      dba_hist_snapshot s,
+      dba_objects o
+    WHERE st.snap_id         = s.snap_id
+    AND o.OBJECT_ID          =st.obj#
+    AND s.end_interval_time >= to_date('16/11/2012 09:00','dd/mm/yyyy hh24:mi:ss')
+    AND s.end_interval_time <= to_date('17/11/2012 05:00','dd/mm/yyyy hh24:mi:ss')
+    GROUP BY 'LOGICAL_READS_DELTA',
+      st.obj#,
+      o.object_type,
+      o.object_name,
+      o.owner
+    UNION ALL
+    SELECT 'PHYSICAL_READS_DELTA' statistic_name ,
+      SUM(Physical_reads_delta) AS "VALUE",
+      st.obj#,
+      o.object_type,
+      o.owner,
+      o.object_name
+    FROM dba_hist_seg_stat st,
+      dba_hist_snapshot s,
+      dba_objects o
+    WHERE st.snap_id         = s.snap_id
+    AND o.OBJECT_ID          =st.obj#
+    AND s.end_interval_time >= to_date('16/11/2012 09:00','dd/mm/yyyy hh24:mi:ss')
+    AND s.end_interval_time <= to_date('17/11/2012 05:00','dd/mm/yyyy hh24:mi:ss')
+    GROUP BY 'PHYSICAL_READS_DELTA',
+      st.obj#,
+      o.object_type,
+      o.object_name,
+      o.owner
+    )t1
+  )
+WHERE rnk < = 10; 

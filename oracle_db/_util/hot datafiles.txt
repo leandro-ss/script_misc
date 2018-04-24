@@ -1,0 +1,9 @@
+SELECT F.snap_id,
+       TO_CHAR(SS.begin_interval_time, 'DD/MM/YYYY HH24:MI') AS BEGIN_INTERVAL,
+       F.FILENAME,
+       F.TSNAME,
+       F.PHYRDS as phys_WRITES,
+       F.PHYWRTS AS PHYS_READS,
+       F.TIME AS WAIT_TIME
+ FROM DBA_HIST_FILESTATXS F JOIN DBA_HIST_SNAPSHOT SS ON (F.snap_id = SS.snap_id)
+ ORDER BY F.SNAP_ID DESC

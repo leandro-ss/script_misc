@@ -1,0 +1,6 @@
+
+SELECT allocated_space, used_space, reclaimable_space
+FROM TABLE(dbms_space.asa_recommendations())
+Where  segment_owner  = '&OWNER'
+and segment_type = 'TABLE'
+and  segment_name = '&TABLE'

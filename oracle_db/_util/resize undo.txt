@@ -1,0 +1,6 @@
+
+create undo tablespace UNDOTBS2 datafile '<complete file path>' size <smaller size>;
+
+alter system set UNDO_TABLESPACE=UNDOTBS2;
+
+drop tablespace UNDOTBS1 including contents and datafiles;

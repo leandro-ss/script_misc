@@ -1,0 +1,62 @@
+CREATE OR REPLACE
+  PACKAGE Hierarchy
+    IS
+        TYPE BranchTableVarchar2Type IS TABLE OF VARCHAR2(4000)
+          INDEX BY BINARY_INTEGER;
+        BranchTableVarchar2 BranchTableVarchar2Type;
+        TYPE BranchTableClobType IS TABLE OF CLOB
+          INDEX BY BINARY_INTEGER;
+        BranchTableClob BranchTableClobType;
+        FUNCTION Branch(
+                        p_Level          IN NUMBER,
+                        p_Value          IN VARCHAR2,
+                        p_Delimiter      IN VARCHAR2 DEFAULT CHR(0)
+                       )
+          RETURN VARCHAR2;
+        PRAGMA RESTRICT_REFERENCES(Branch,WNDS);
+        FUNCTION Branch(
+                        p_Level          IN NUMBER,
+                        p_Value          IN CLOB,
+                        p_Delimiter      IN VARCHAR2 DEFAULT CHR(0)
+                       )
+          RETURN CLOB;
+        PRAGMA RESTRICT_REFERENCES(Branch,WNDS);
+END Hierarchy;
+/ 
+CREATE OR REPLACE
+  PACKAGE BODY Hierarchy
+    IS
+        ReturnValueVarchar2 VARCHAR2(4000);
+        ReturnValueClob     CLOB;
+    FUNCTION Branch(
+                    p_Level        IN NUMBER,
+                    p_Value        IN VARCHAR2,
+                    p_Delimiter    IN VARCHAR2 DEFAULT CHR(0)
+                   )
+      RETURN VARCHAR2
+      IS
+      BEGIN
+          BranchTableVarchar2(p_Level) := p_Value;
+          ReturnValueVarchar2          := p_Value;
+          FOR I IN REVERSE 1..p_Level - 1 LOOP
+            ReturnValueVarchar2 := BranchTableVarchar2(I)|| p_Delimiter || ReturnValueVarchar2;
+          END LOOP;
+          RETURN ReturnValueVarchar2;
+    END Branch;
+    FUNCTION Branch(
+                    p_Level        IN NUMBER,
+                    p_Value        IN CLOB,
+                    p_Delimiter    IN VARCHAR2 DEFAULT CHR(0)
+                   )
+      RETURN CLOB
+      IS
+      BEGIN
+          BranchTableClob(p_Level) := p_Value;
+          ReturnValueClob          := p_Value;
+          FOR I IN REVERSE 1..p_Level - 1 LOOP
+            ReturnValueClob := BranchTableClob(I)|| p_Delimiter || ReturnValueClob;
+          END LOOP;
+          RETURN ReturnValueClob;
+    END Branch;
+END Hierarchy;
+/ 

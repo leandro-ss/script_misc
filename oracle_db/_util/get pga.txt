@@ -1,0 +1,13 @@
+SELECT /*+parallel (pgas 10)*/To_Char(snap.begin_interval_time,'dd/mm/yyyy hh24:mi') AS data,
+                   NVL (MAX (DECODE (PGAS.instance_number, 1, PGAS.VALUE/1024/1024)), NULL) SIEBELP11,
+                   NVL (MAX (DECODE (PGAS.instance_number, 2, PGAS.VALUE/1024/1024)), NULL) SIEBELP12,
+                   NVL (MAX (DECODE (PGAS.instance_number, 2, PGAS.VALUE/1024/1024)), NULL) SIEBELP13,
+                   MAX(6502) AS THRESHOLD  --> PGA AGGREGATE TARGET
+              FROM DBA_HIST_PGASTAT PGAS, DBA_HIST_SNAPSHOT SNAP
+                   where SNAP.snap_id = pgas.snap_id
+                   and snap.instance_number = pgas.instance_number
+                   AND PGAS.instance_number IN (1,2,3)
+                   AND pgas.NAME='total PGA allocated'
+                   AND snap.begin_interval_time >= TRUNC(ADD_MONTHS(SYSDATE, -2),'MM')
+                   GROUP BY To_Char(snap.begin_interval_time,'dd/mm/yyyy hh24:mi')
+          ORDER BY To_Date(data,'dd/mm/yyyy hh24:mi');

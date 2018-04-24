@@ -1,0 +1,8 @@
+
+query com hint
+
+select /*+ gather_plan_statistics */ owner, count(*) from dba_source group by owner;
+
+obtem plano
+
+select * from table(dbms_xplan.display_cursor(null,null,'ALLSTATS LAST'));

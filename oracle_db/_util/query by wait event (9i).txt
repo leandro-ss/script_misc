@@ -1,0 +1,12 @@
+select se.event,
+       sa.sql_text, sa.fetches, sa.EXECUTIONS, sa.FIRST_LOAD_TIME,
+       sa.CPU_TIME, sa.ELAPSED_TIME, sa.DISK_READS, sa.BUFFER_GETS, sa.ROWS_PROCESSED,
+       sa.HASH_VALUE, sa.MODULE
+  from v$session_event se, v$session s, v$sqlarea sa
+ where se.sid = s.sid
+   and s.username is not null
+   and s.status = 'ACTIVE'
+   and s.sql_hash_value = sa.hash_value
+   and se.event not like '%SQL*Net%'
+   and (sa.BUFFER_GETS > 100000 or sa.BUFFER_GETS < 0)
+ order by sa.BUFFER_GETS desc

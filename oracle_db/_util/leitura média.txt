@@ -1,0 +1,9 @@
+select f.snap_id
+,s.begin_interval_time
+,s.end_interval_time
+,lead(f.phyblkrd*f.block_size/1024/1024)
+ over(partition by s.startup_time order by s.snap_id desc)
+from dba_hist_filestatxs f, dba_hist_snapshot s
+where f.file# = 10
+and f.snap_id = s.snap_id
+order by f.snap_id desc

@@ -1,0 +1,30 @@
+Criando o VG, o LV e o filesystem
+Nessa etapa vamos ser pontuais e passaremos os comandos para criação dos PV, VG, LV e filesystems. Vamos imaginar que temos duas partições, /dev/sda1 e /dev/sda2.
+
+1. Criar os PV (Physical Volumes), com o comando:
+
+# pvscan
+# pvcreate /dev/sda1 /dev/sdb1
+
+2. Criar o VG (Volume Group):
+
+# vgcreate nome_do_vg /dev/sda1 /dev/sdb1
+
+3. Ativar o VG criado:
+
+# vgchange -an
+# vgchange -a y nome_do_vg
+
+4. Criar o LV (Logical Volume):
+
+# lvcreate -L tamanho(M/G/T) nome_do_vg -n nome_do_lv
+
+OBS: o tamanho do Logical Volume deve ser informado acompanhado da ordem de grandeza em bytes, ex.: 100M, 10G, 1T.
+
+5. Criar o filesystem:
+
+# mke2fs -b 4096 -j -L nome_do_fs /dev/nome_do_vg/nome_do_lv
+
+6. Montar o filesystem:
+
+# mount /dev/nome_do_vg/nome_do_lv /mount_point 

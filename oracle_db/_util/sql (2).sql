@@ -1,0 +1,41 @@
+COL OBJECT_OWNER FOR A12
+COL OBJECT_NAME FOR A30
+COL ID FOR A3
+COL PID FOR A3
+
+ACCEPT HASH_VALUE PROMPT 'HASH VALUE...........: '
+
+select
+	sql_text
+from
+	v$sqltext
+where
+	hash_value = &hash_value
+order by
+	piece
+/
+
+COL PLAN_DETAIS FOR A100
+SELECT
+	DISTINCT
+	TO_CHAR(B.ID) ID,
+	TO_CHAR(B.PARENT_ID) PID,
+	lpad(' ', 2*(B.DEPTH-1))||' '||
+        B.OPERATION||' '||
+	B.OBJECT_OWNER||DECODE(B.OBJECT_OWNER,NULL,'','.')||  
+	B.OBJECT_NAME||' '||
+	B.OPTIONS  PLAN_DETAIS,
+	B.CARDINALITY,
+	B.BYTES,
+	B.COST,
+	B.CPU_COST,
+	B.IO_COST
+FROM
+        V$SESSION  A,
+        V$SQL_PLAN B
+WHERE
+        A.SQL_HASH_VALUE     = B.HASH_VALUE
+        and A.SQL_HASH_VALUE = &hash_value
+ORDER BY
+	B.ID
+/

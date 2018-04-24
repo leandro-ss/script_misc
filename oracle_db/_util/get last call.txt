@@ -1,0 +1,5 @@
+select a.sid,a.event,a.seconds_in_wait,a.p1,a.p2,b.last_call_et
+ from v$session_wait a, v$session b
+ where a.sid=b.sid
+ and a.sid = 5292
+ order by b.last_call_et;
