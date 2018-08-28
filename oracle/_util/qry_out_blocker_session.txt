@@ -1,0 +1,20 @@
+with bloquer as
+  (
+  select distinct bloquer.sql_id,
+    bloquer.sql_opname
+  from dba_hist_active_sess_history ash
+  join dba_hist_active_sess_history bloquer
+  on ash.session_serial#=bloquer.blocking_session_serial#
+  join dba_hist_snapshot snap
+  on snap.snap_id                    =ash.snap_id
+  and snap.instance_number           =ash.instance_number
+  and trunc(snap.end_interval_time) >= to_date('20140901','yyyymmdd')
+  and trunc(snap.end_interval_time) <= to_date('20141010','yyyymmdd')
+  AND ASH.EVENT                      ='library cache: mutex X'
+  )
+select b.sql_opname,
+  t.sql_id,
+  t.sql_text
+from dba_hist_sqltext t
+join bloquer b
+on t.sql_id=b.sql_id

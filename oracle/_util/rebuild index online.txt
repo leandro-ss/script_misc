@@ -1,0 +1,12 @@
+select obj#,flags from ind$ where obj#=56877
+
+declare
+isclean boolean;
+begin
+isclean :=false;
+while isclean=false
+loop
+isclean := DBMS_REPAIR.ONLINE_INDEX_CLEAN(dbms_repair.all_index_id,dbms_repair.lock_wait);
+dbms_lock.sleep(10);
+end loop;
+end;

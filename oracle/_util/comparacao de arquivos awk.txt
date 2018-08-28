@@ -1,0 +1,51 @@
+
+comentarios
+
+awk -F',' 'BEGIN 
+
+
+-- bloco inicial, carrega baseline em array
+{i=0 ; while (getline < "baseline.txt") { l[i]=$0 ; i++ } } ; 
+
+-- para cada campo do arquivo a ser comparado, verifica se existe no baseline e incrementa em "t"
+{ for (j=1 ; j<=NF ; j++) 
+  { for (w=0 ; w<=i ; w++) 
+    { if($j == l[w]) t++; } } } ; 
+
+END 
+
+-- se a quantidade de campos do arquivo a ser comparado for igual ou maior ao baseline, valida arquivo
+{ if(t >= i) { print "arquivo valido" } else { print "arquivo invalido" } }' ed.txt
+
+comando inteiro
+
+awk -F',' 'BEGIN {i=0 ; while (getline < "baseline.txt") { l[i]=$0 ; i++ } } ; { for (j=1 ; j<=NF ; j++) { for (w=0 ; w<=i ; w++) { if($j == l[w]) t++; } } } ; END { if(t >= i) { print "arquivo valido" } else { print "arquivo invalido" } }' ed.txt
+
+l => array de baseline
+i => qtd de registros no array
+j => cada um dos campos no arquivo a comparar
+w => contador da qtd de registros do array de baseline
+t => contador de métricas a serem batidas
+
+conteudo de teste dos arquivos
+
+baseline.txt
+"abc"
+"def"
+
+ed1.txt
+"abc","def","ghi"
+
+ed2.txt
+"abc","ghi"
+
+
+teste
+
+awk -F',' 'BEGIN {i=0 ; while (getline < "baseline.txt") { l[i]=$0 ; i++ } } ; { for (j=1 ; j<=NF ; j++) { for (w=0 ; w<=i ; w++) { if($j == l[w]) t++; } } } ; END { if(t >= i) { print "arquivo valido" } else { print "arquivo invalido" } }' ed1.txt
+
+arquivo valido
+
+awk -F',' 'BEGIN {i=0 ; while (getline < "baseline.txt") { l[i]=$0 ; i++ } } ; { for (j=1 ; j<=NF ; j++) { for (w=0 ; w<=i ; w++) { if($j == l[w]) t++; } } } ; END { if(t >= i) { print "arquivo valido" } else { print "arquivo invalido" } }' ed2.txt
+
+arquivo invalido

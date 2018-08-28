@@ -1,0 +1,5 @@
+
+-- Recupera query por SQL_ID
+SELECT SQL_TEXT
+  FROM DBA_HIST_SQLTEXT
+ WHERE SQL_ID = '&ID'

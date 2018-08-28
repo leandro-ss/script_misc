@@ -1,0 +1,11 @@
+-- VERIFICA SE EXISTEM SESSOES PARADAS
+SELECT B.USERNAME, a.SID, B.CLIENT_INFO,b.logon_time, b.status, a.EVENT, a.WAIT_TIME, a.SECONDS_IN_WAIT, a.STATE,B.USERNAME,C.DISK_READS,
+--(C.BUFFER_GETS*8192) buffer_gets,
+C.SQL_TEXT
+ FROM V$SESSION_WAIT a , v$session b, v$sqlarea C
+WHERE a.SID = b.sid 
+and b.status = 'ACTIVE'
+AND( B.USERNAME LIKE 'NFR%' or b.username like '%SYS%')
+AND C.address(+) = b.SQL_ADDRESS
+AND C.hash_value(+) = b.SQL_HASH_VALUE
+ORDER BY a.SECONDS_IN_WAIT DESC

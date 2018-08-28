@@ -1,0 +1,21 @@
+select to_char(snap.begin_interval_time,'dd/mm/yyyy hh24:mi:ss'), snap.instance_number,
+sgas.pool, 
+sum(case when sgas.name like '%free memory%' then 0 else sgas.bytes end)/1024/1024 used,
+sum(case when sgas.name like '%free memory%' then sgas.bytes else 0 end)/1024/1024 free
+from dba_hist_sgastat sgas, dba_hist_snapshot snap
+where trunc(snap.begin_interval_time) 
+between to_date('2012-03-01','yyyy-mm-dd') and to_date('2012-04-30','yyyy-mm-dd')
+and sgas.snap_id = snap.snap_id
+group by snap.begin_interval_time,snap.instance_number,
+sgas.pool
+
+select to_char(snap.begin_interval_time,'dd/mm/yyyy hh24:mi:ss'), snap.instance_number, pgas.name, sum(pgas.value) value
+  from dba_hist_pgastat pgas, dba_hist_snapshot snap
+ where snap.instance_number = pgas.instance_number
+   and trunc(snap.begin_interval_time) between
+       to_date('2012-03-01', 'yyyy-mm-dd') and
+       to_date('2012-04-30', 'yyyy-mm-dd')
+   and pgas.snap_id = snap.snap_id
+   and pgas.name in
+       ('total PGA allocated', 'total PGA inuse'/*, 'process count'*/)
+ group by snap.begin_interval_time, snap.instance_number, pgas.name;

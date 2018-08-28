@@ -1,0 +1,31 @@
+
+select t.blocks, t.num_rows, i.table_name, i.index_name,
+       decode(t.blocks,0,'0.0x',trim(to_char(i.clustering_factor / t.blocks,'990.00'))||'x') as cl_blk,
+       decode(t.num_rows,0,'0.0x',trim(to_char(i.clustering_factor / t.num_rows,'990.00'))||'x') as cl_row,
+       trim(to_char(i.pct_free,'990.00'))||'%' as pfree_ind, trim(to_char(t.pct_free,'990.00'))||'%' as pfree_tab,
+       decode(t.blocks,0,'0.0%',trim(to_char((1-(t.num_rows * t.avg_row_len/1024)/(t.blocks*8))*100,'990.00'))||'%') as tab_frag
+from dba_indexes i, dba_tables t
+where i.table_name = t.table_name and t.owner = i.owner
+and t.owner = 'MDLSCP'
+and t.table_name in ('CP_CLASSIF_CLIENTE','CP_EMPRESA','CP_FORNECEDOR','CP_ENTREGADOR','CP_ACOMP_PEDIDO',
+'CP_RADIO','CP_HORARIO_TRAB_ENTREGADOR','CP_ACOMP_REL_PEDIDO_STATUS','SENDFAX','SD_SESSAO_WEB',
+'CP_CLIENTE','CP_PDD_COMPOSICAO_TEMP_ENTREGA','CP_PEDIDO','CP_PEDIDO_TEMPO_FORNECEDOR')
+order by i.table_name, i.index_name
+
+select tp.partition_name, tp.blocks, tp.num_rows, i.table_name, i.index_name,
+       decode(tp.blocks,0,'0.0x',trim(to_char(ip.clustering_factor / tp.blocks,'990.00'))||'x') as cl_blk,
+       decode(tp.num_rows,0,'0.0x',trim(to_char(ip.clustering_factor / tp.num_rows,'990.00'))||'x') as cl_row,
+       trim(to_char(ip.pct_free,'990.00'))||'%' as pfree_ind, trim(to_char(tp.pct_free,'990.00'))||'%' as pfree_tab,
+       decode(tp.blocks,0,'0.0%',trim(to_char((1-(tp.num_rows * tp.avg_row_len/1024)/(tp.blocks*8))*100,'990.00'))||'%') as tab_frag
+from dba_tables t, dba_tab_partitions tp, dba_indexes i, dba_ind_partitions ip
+where t.owner = 'CAPACITY'
+and t.table_name in ('TMINFRA_SERVIDOR')
+and t.owner = tp.table_owner
+and t.table_name = tp.table_name
+and t.owner = i.owner
+and t.table_name = i.table_name
+and i.owner = ip.index_owner
+and i.index_name = ip.index_name
+and tp.partition_name = ip.partition_name
+order by i.table_name, i.index_name
+

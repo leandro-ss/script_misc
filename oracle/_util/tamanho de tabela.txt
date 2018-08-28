@@ -1,0 +1,18 @@
+select tamanho, count(*)
+from (
+select owner,
+segment_type,
+bytes/1024/1024 mb,
+(case when bytes between 0 and 4194303 then '1. 128 Kb'
+when (bytes between 4194304 and 33554431) then '2. 4 Mb'
+when (bytes between 33554432 and 67108863) then '3. 32 Mb'
+when (bytes between 67108864 and 167772159) then '4. 64 Mb'
+when (bytes >= 167772160) then '5. 160 Mb'
+else 'N/A'
+end) tamanho
+from dba_segments
+where owner not in ('SYS','SYSTEM','SYSMAN','OUTLN','TSMSYS','DBSNMP','PERFSTAT_8I')
+and segment_name not like 'BIN$%'
+and segment_type = 'TABLE')
+group by tamanho
+order by 1, 2

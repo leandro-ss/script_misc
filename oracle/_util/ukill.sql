@@ -1,0 +1,34 @@
+PROMPT
+PROMPT ==> FUNÇÃO: EXIBE INFORMAÇÕES SOBRE AS SESSÕES EM STATUS KILLED
+PROMPT ==> DESENVOLVIDO POR CLEBER R. MARQUES
+PROMPT ==> MSN: cleber_rmarques@hotmail.com
+PROMPT
+SET LINES 1000
+SET PAGES 1000
+col osuser	format a13
+col username	format a13
+col sid		format 9999
+col serial#	format 999999
+col status	format a10
+col machine	format a25
+SELECT 
+	S.OSUSER, 
+	S.USERNAME, 
+	S.SID, 
+	S.SERIAL#,  
+	P.SPID THREADID, 
+	S.STATUS, 
+	S.SERVER, 
+	S.MACHINE, 
+	S.PROGRAM
+FROM   
+	V$SESSION S, 
+	V$PROCESS P
+WHERE  
+	S.USERNAME 	!= 'UNKNOWN'
+	AND S.TYPE 	!= 'BACKGROUND'
+	AND S.STATUS    = 'KILLED'
+	AND P.ADDR   	= S.PADDR
+ORDER  BY 
+	1
+/

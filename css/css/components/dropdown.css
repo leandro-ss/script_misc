@@ -1,0 +1,11 @@
+.dropdown-menu {
+  box-shadow: none;
+}
+.dropdown-menu a {
+  font-weight: bolder !important;
+  color: #F6C6E6 !important;
+}
+
+.dropdown-toggle{
+    box-shadow:none
+}

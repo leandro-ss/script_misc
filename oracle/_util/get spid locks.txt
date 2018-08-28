@@ -1,0 +1,5 @@
+select a.spid, b.sid, b.serial#, b.machine, b.username, b.osuser, b.program, b.BLOCKING_SESSION
+from v$session b, v$process a
+where b.paddr = a.addr and type='USER'
+and (b.sid in (select BLOCKING_SESSION from v$session) or b.BLOCKING_SESSION is not null)
+order by b.BLOCKING_SESSION nulls first

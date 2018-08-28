@@ -1,0 +1,6 @@
+TKPROF [tracefile] [outputfile] SYS=no WAITS=yes SORT=prsela,exeela,fchela
+
+a.	SYS=no
+b.	EXPLAIN=<usuário>/<senha>
+c.	WAITS=yes
+d.	SORT=exeela

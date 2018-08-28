@@ -1,0 +1,56 @@
+with
+  t1 as (
+    select s.instance_number, s.snap_id, to_char(s.end_interval_time,'dd/mm/yyyy hh24:mi') snap_time,
+           e.event_name event, nvl(e.time_waited_micro,0)/1000000 time, e.total_waits,
+           startup_time
+      from dba_hist_snapshot s,
+           dba_hist_system_event e
+     where s.snap_id = e.snap_id
+       and s.instance_number = e.instance_number
+       and s.dbid = e.dbid
+       and e.wait_class not in ('Idle')
+       and trunc(s.begin_interval_time) >= to_date(&data_inicial,'yyyymmdd')
+       and trunc(s.end_interval_time) <= to_date(&data_final,'yyyymmdd')
+     union all
+    select s.instance_number, s.snap_id, to_char(s.end_interval_time,'dd/mm/yyyy hh24:mi') snap_time,
+           'CPU' event, nvl(c.value,0)/1000000 time, 0 total_waits, startup_time
+      from dba_hist_snapshot s,
+           dba_hist_sys_time_model c
+     where s.snap_id = c.snap_id
+       and s.instance_number = c.instance_number
+       and s.dbid = c.dbid
+       and c.stat_name = 'DB CPU'
+       and trunc(s.begin_interval_time) >= to_date(&data_inicial,'yyyymmdd')
+       and trunc(s.end_interval_time) <= to_date(&data_final,'yyyymmdd')),
+  t2 as (
+    select instance_number,
+           snap_id,
+           snap_time,
+           event,
+           time time_s,
+           lag(time,1) over (partition by instance_number, event order by snap_id) pre_time_s,
+           decode(startup_time,lag(startup_time,1) over (partition by instance_number, event order by snap_id),
+           time - (lag(time,1) over (partition by instance_number, event order by snap_id)), time) delta_s,
+           startup_time
+      from t1
+     order by instance_number, snap_id, event),
+  t3 as (     
+    select instance_number, snap_id, snap_time, event, time_s, delta_s, startup_time,
+           rank() over (partition by instance_number, snap_id order by delta_s desc) rank      
+      from t2
+     order by instance_number, snap_id asc, delta_s desc),
+t4 as (
+select instance_number,
+       snap_time, event, 
+       case
+         when rownum <= 10 then null
+         else case 
+                when to_char(to_date(snap_time,'dd/mm/yyyy hh24:mi'),'hh24') in ('00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23') then delta_s
+                else 0
+              end
+       end delta_s, 
+       decode(startup_time,lag(startup_time,1) over (order by snap_id),null,'X') startup
+  from t3
+ where rank <= 10
+ order by instance_number, snap_id asc, rank asc)
+ select instance_number, snap_time, event, delta_s from t4 where delta_s is not null

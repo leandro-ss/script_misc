@@ -1,0 +1,37 @@
+with
+segments as
+(select owner, segment_name, sum(bytes)/1024/1024 as mbytes, sum(blocks) as blocks
+from dba_segments group by owner, segment_name),
+tab as
+(select t.owner, t.table_name, nvl2(sum(p.num_rows), sum(p.num_rows), sum(t.num_rows)) nrows
+from dba_tables t, dba_tab_partitions p
+where t.owner not in ('SYSTEM','CTXSYS','EXFSYS','SYS','SYSMAN','OUTLN','TSMSYS','DBSNMP','PERFSTAT')
+and t.table_name = p.table_name (+)
+and t.owner = p.table_owner (+)
+group by t.owner, t.table_name)
+
+select t.owner, t.table_name, t.nrows, s.mbytes, s.blocks
+from segments s, tab t
+where s.owner (+) = t.owner
+and s.segment_name (+) = t.table_name
+
+with
+segments as
+(select owner, segment_name, sum(bytes)/1024/1024 as mbytes, sum(blocks) as blocks
+from dba_segments group by owner, segment_name),
+tab as
+(select t.owner, i.index_name, t.table_name , nvl2(sum(p.num_rows), sum(p.num_rows), sum(t.num_rows)) nrows
+from dba_tables t, dba_tab_partitions p, dba_indexes i
+where t.owner not in ('SYSTEM','CTXSYS','EXFSYS','SYS','SYSMAN','OUTLN','TSMSYS','DBSNMP','PERFSTAT')
+and t.iot_type is not null
+and t.owner = i.owner
+and t.table_name = i.table_name
+and t.table_name = p.table_name (+)
+and t.owner = p.table_owner (+)
+group by t.owner, i.index_name, t.table_name)
+
+select t.owner, t.table_name, max(t.nrows), sum(s.mbytes), sum(s.blocks)
+from segments s, tab t
+where s.owner (+) = t.owner
+and s.segment_name (+) = t.index_name
+group by t.owner, t.table_name
